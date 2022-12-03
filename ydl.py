@@ -1,3 +1,5 @@
+import re
+
 from yt_dlp import YoutubeDL
 import os
 import threading
@@ -13,8 +15,8 @@ def gui():
 
     # 関数の定義
     def dl():
-        mp3_mp4 = "none"
-        wav_check = "none"
+        mp3_mp4 = None
+        wav_check = None
         if not wavs.get():
             mp3_mp4 = "mp3"
             if bln.get():
@@ -29,9 +31,6 @@ def gui():
     root.title("VideoDL")
     root.geometry("250x100")
     root.resizable(0, 0)
-
-    # bln.set(False)
-    # フレームの作成と設置
     frame = ttk.Frame(root)
     frame.grid(column=0, row=0, sticky=tk.NSEW, padx=5, pady=10)
     # 各種ウィジェットの作成
@@ -55,6 +54,10 @@ def gui():
 
 
 def download_video(link, download_mode="none", download_mode_wav="none"):
+    #urlかどうかのちぇっく
+    pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
+    if not re.match(pattern, link):
+        link = "ytsearch:"+link
     # mp3かmp4の条件分岐
     if download_mode == "mp3":
         # titleの取得
@@ -63,7 +66,7 @@ def download_video(link, download_mode="none", download_mode_wav="none"):
             video_title = info_dict.get('title', None)
         ydl_opts = {
             'format': 'bestaudio/best',
-            #  'outtmpl': f"{os.getcwd()}/video/{video_title}" + '.%(ext)s',
+            'outtmpl': f"{os.getcwd()}/video/{video_title}" + '.%(ext)s',
             'postprocessors': [
                 {'key': 'FFmpegExtractAudio',
                  'preferredcodec': 'mp3',
@@ -82,7 +85,7 @@ def download_video(link, download_mode="none", download_mode_wav="none"):
             video_title = info_dict.get('title', None)
         ydl_opts = {
 
-            #    'outtmpl': f"{os.getcwd()}/video/{video_title}" + '.%(ext)s',
+            'outtmpl': f"{os.getcwd()}/video/{video_title}" + '.%(ext)s',
             'format': 'best+mp4'
         }
         # download
@@ -90,6 +93,7 @@ def download_video(link, download_mode="none", download_mode_wav="none"):
         ydl.download(link)
     if download_mode_wav == "wav":
         ydl_opts = {
+            'outtmpl': f"{os.getcwd()}/video/{video_title}" + '.%(ext)s',
             'format': 'bestaudio/best',
             'postprocessors': [
                 {'key': 'FFmpegExtractAudio',
